@@ -14,6 +14,4 @@ class EmployeeEmptyModule : EmptyModule() {
     override fun onBind(holder: SimpleViewHolder) {
         //Do nothing now
     }
-
-
 }

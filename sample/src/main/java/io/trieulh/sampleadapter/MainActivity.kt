@@ -1,6 +1,7 @@
 package io.trieulh.sampleadapter
 
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -44,18 +45,20 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 override fun withVisibleThreshold(): Int = 3
                 override val layoutRes: Int = R.layout.item_loading_employee
                 override fun onLoadMore(currentPage: Int) {
-                    val list = adapter.items.toMutableList()
-                    for (i in 1..5) {
-                        val id = Random.nextInt()
-                        list.add(
-                            Employee(
-                                id,
-                                "Name ${id}",
-                                "Job ${id}"
+                    Handler().postDelayed({
+                        val list = adapter.items.toMutableList()
+                        for (i in 1..5) {
+                            val id = Random.nextInt()
+                            list.add(
+                                Employee(
+                                    id,
+                                    "Name ${id}",
+                                    "Job ${id}"
+                                )
                             )
-                        )
-                    }
-                    adapter.setItems(list)
+                        }
+                        adapter.setItems(list)
+                    }, 3000)
                 }
 
                 override fun onBind(holder: SimpleViewHolder) {
