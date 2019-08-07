@@ -1,6 +1,6 @@
-# Simple-Generic-Adapter
+# SimpleGenericAdapter
 
-[![Download](https://jitpack.io/v/trieulh-ict/SimpleGenericAdapter.svg)]
+![Download](https://jitpack.io/v/trieulh-ict/SimpleGenericAdapter.svg)
 
 SimpleGenericAdapter is an Android library that helps developers to easily create a Recyclerview Adapter without repeatedly building any adapter boilerplate.
 
@@ -8,6 +8,7 @@ SimpleGenericAdapter is an Android library that helps developers to easily creat
 - Create UI Module to bind item data
 - Create UI Module for Empty state
 - Create UI Module for Paging
+- Support OnItemClickListener
 
 ## Demo
 
