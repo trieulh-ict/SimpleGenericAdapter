@@ -115,6 +115,9 @@ adapter = SimpleGenericAdapter()
 ## In the future
 The library is still under development,so you can suggest more feature by committing issues to this repository.
 
+## Credit
+Inspired by OneAdapter of ironSource.
+
 ## License
 MIT License
 
