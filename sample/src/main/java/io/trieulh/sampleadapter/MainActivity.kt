@@ -15,7 +15,7 @@ import io.trieulh.simplegenericadapter.SimpleGenericAdapter
 import io.trieulh.simplegenericadapter.holder.SimpleViewHolder
 import io.trieulh.simplegenericadapter.listener.OnItemSelectedListener
 import io.trieulh.simplegenericadapter.module.PagingModule
-import io.trieulh.simplegenericadapter.utils.animation.AnimationType
+import io.trieulh.simplegenericadapter.utils.animation.SimpleAnimationType
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.random.Random
 
@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         adapter = SimpleGenericAdapter()
-            .addItemAnimation(AnimationType.SLIDE_IN_RIGHT)
+            .addItemAnimation(SimpleAnimationType.SLIDE_IN_RIGHT)
             .addItemModule(EmployeeModule().addOnItemSelectedListener(object : OnItemSelectedListener<Employee> {
                 override fun onItemSelected(position: Int, item: Employee) {
                     Toast.makeText(this@MainActivity, "${item.id}", Toast.LENGTH_SHORT).show()

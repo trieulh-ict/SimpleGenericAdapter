@@ -8,7 +8,7 @@ import io.trieulh.simplegenericadapter.diff.LoadingIndicator
 import io.trieulh.simplegenericadapter.module.EmptyModule
 import io.trieulh.simplegenericadapter.module.ItemModule
 import io.trieulh.simplegenericadapter.module.PagingModule
-import io.trieulh.simplegenericadapter.utils.animation.AnimationType
+import io.trieulh.simplegenericadapter.utils.animation.SimpleAnimationType
 
 /**
  * Created by Trieulh on 01,August,2019
@@ -53,7 +53,7 @@ class SimpleGenericAdapter {
         return this
     }
 
-    fun addItemAnimation(enumType: AnimationType): SimpleGenericAdapter {
+    fun addItemAnimation(enumType: SimpleAnimationType): SimpleGenericAdapter {
         adapter.addItemAnimation(enumType.value)
         return this
     }
