@@ -1,7 +1,10 @@
 package io.trieulh.simplegenericadapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
+import androidx.annotation.AnimRes
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.trieulh.simplegenericadapter.diff.Diffable
@@ -17,8 +20,10 @@ import io.trieulh.simplegenericadapter.utils.paging.EndlessScrollListener
 import io.trieulh.simplegenericadapter.utils.paging.LoadMoreObserver
 import io.trieulh.simplegenericadapter.utils.removeClassIfExist
 
+
 class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserver {
     private var recyclerView: RecyclerView? = null
+
     internal var data: MutableList<Diffable> = mutableListOf()
         private set
 
@@ -31,6 +36,10 @@ class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserv
     //Paging
     private var pagingModule: PagingModule? = null
     private var endlessScrollListener: EndlessScrollListener? = null
+
+    //Item Animation
+    private var animResId: Int = -1;
+    private var lastPosition = -1
 
     private val uiHandler
         get() = recyclerView?.handler
@@ -169,8 +178,13 @@ class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserv
             is EmptyIndicator -> return emptyModule!!.onBind(holder)
             is LoadingIndicator -> return pagingModule!!.onBind(holder)
             else -> modules.forEach { entry ->
-                if (entry.value.isModule(data[position]))
-                    return entry.value.onBindItem(position, data[position], holder)
+                if (entry.value.isModule(data[position])) {
+                    entry.value.onBindItem(position, data[position], holder)
+                    if (animResId != -1)
+                        setAnimation(holder.itemView, position)
+                    return
+                }
+
             }
         }
 
@@ -191,6 +205,18 @@ class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserv
 
     override fun onLoadMore(currentPage: Int) {
         uiHandler?.post { pagingModule?.onLoadMore(currentPage) }
+    }
+
+    fun addItemAnimation(@AnimRes resId: Int) {
+        this.animResId = resId;
+    }
+
+    private fun setAnimation(viewToAnimate: View, position: Int) {
+        if (position > lastPosition) {
+            val animation = AnimationUtils.loadAnimation(viewToAnimate.context, animResId)
+            viewToAnimate.startAnimation(animation)
+            lastPosition = position
+        }
     }
 
 }

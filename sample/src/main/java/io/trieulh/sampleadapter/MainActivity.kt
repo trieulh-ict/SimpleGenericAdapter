@@ -15,6 +15,7 @@ import io.trieulh.simplegenericadapter.SimpleGenericAdapter
 import io.trieulh.simplegenericadapter.holder.SimpleViewHolder
 import io.trieulh.simplegenericadapter.listener.OnItemSelectedListener
 import io.trieulh.simplegenericadapter.module.PagingModule
+import io.trieulh.simplegenericadapter.utils.animation.AnimationType
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.random.Random
 
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         adapter = SimpleGenericAdapter()
+            .addItemAnimation(AnimationType.SLIDE_IN_RIGHT)
             .addItemModule(EmployeeModule().addOnItemSelectedListener(object : OnItemSelectedListener<Employee> {
                 override fun onItemSelected(position: Int, item: Employee) {
                     Toast.makeText(this@MainActivity, "${item.id}", Toast.LENGTH_SHORT).show()
@@ -47,7 +49,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 override fun onLoadMore(currentPage: Int) {
                     Handler().postDelayed({
                         val list = adapter.items.toMutableList()
-                        for (i in 1..5) {
+                        for (i in 1..10) {
                             val id = Random.nextInt()
                             list.add(
                                 Employee(
@@ -58,7 +60,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                             )
                         }
                         adapter.setItems(list)
-                    }, 3000)
+                    }, 1000)
                 }
 
                 override fun onBind(holder: SimpleViewHolder) {

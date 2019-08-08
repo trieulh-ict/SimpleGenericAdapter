@@ -1,5 +1,6 @@
 package io.trieulh.simplegenericadapter
 
+import androidx.annotation.AnimRes
 import androidx.recyclerview.widget.RecyclerView
 import io.trieulh.simplegenericadapter.diff.Diffable
 import io.trieulh.simplegenericadapter.diff.EmptyIndicator
@@ -7,6 +8,7 @@ import io.trieulh.simplegenericadapter.diff.LoadingIndicator
 import io.trieulh.simplegenericadapter.module.EmptyModule
 import io.trieulh.simplegenericadapter.module.ItemModule
 import io.trieulh.simplegenericadapter.module.PagingModule
+import io.trieulh.simplegenericadapter.utils.animation.AnimationType
 
 /**
  * Created by Trieulh on 01,August,2019
@@ -39,9 +41,20 @@ class SimpleGenericAdapter {
         return this
     }
 
+
     fun attachTo(recyclerView: RecyclerView): SimpleGenericAdapter {
         recyclerView.adapter = adapter
         adapter.attachTo(recyclerView)
+        return this
+    }
+
+    fun addItemAnimation(@AnimRes resId: Int): SimpleGenericAdapter {
+        adapter.addItemAnimation(resId)
+        return this
+    }
+
+    fun addItemAnimation(enumType: AnimationType): SimpleGenericAdapter {
+        adapter.addItemAnimation(enumType.value)
         return this
     }
 }
