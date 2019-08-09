@@ -5,7 +5,7 @@ import androidx.recyclerview.widget.DiffUtil
 /**
  * Created by Trieulh on 01,August,2019
  */
-abstract class SimpleDiffUtil(private val oldList: List<*>, private val newList: List<*>) : DiffUtil.Callback() {
+internal abstract class SimpleDiffUtil(private val oldList: List<*>, private val newList: List<*>) : DiffUtil.Callback() {
     override fun getOldListSize(): Int = oldList.size
     override fun getNewListSize(): Int = newList.size
 
