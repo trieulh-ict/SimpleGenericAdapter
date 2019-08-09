@@ -5,6 +5,12 @@
 SimpleGenericAdapter is an Android library that helps developers to easily create a Recyclerview Adapter without repeatedly building any adapter boilerplate.
 
 ## Features
+
+### v0.2.0
+- Support Scroll Item Animation
+- Add Drag & Drop feature
+
+### v0.1.0
 - Create UI Module to bind item data
 - Create UI Module for Empty state
 - Create UI Module for Paging
@@ -12,7 +18,7 @@ SimpleGenericAdapter is an Android library that helps developers to easily creat
 
 ## Demo
 
-<img src="images/Empty.png" width="20%"> <img src="images/Items.png" width="20%"> <img src="images/Paging.png" width="20%">
+<img src="images/Empty.png" width="30%"> <img src="images/Items.png" width="30%"> <img src="images/Paging.png" width="30%">
 
 
 ## How to use it?
@@ -38,9 +44,9 @@ allprojects {
 }
 ```
 
-### Usage
+### Create Modules
 
-- Implement an Item Module using `ItemModule<ModelType>`
+- Implement an Item Module using `ItemModule<ModelType>` (`ModelType` class should implement `Diffable`)
 
 ```kotlin
 class AdvertisementModule : ItemModule<Advertisement>() {
@@ -74,7 +80,7 @@ class EmployeeEmptyModule : EmptyModule() {
 - Create adapter and attach to your reyclerview:
 
 ```kotlin
-adapter = SimpleGenericAdapter()
+adapter = SimpleGenericAdapter.Builder()
             .addItemModule(AdvertisementModule())
             .addEmptyModule(EmployeeEmptyModule())
             .attachTo(listView)
@@ -83,7 +89,7 @@ adapter = SimpleGenericAdapter()
 - You can create Paging module by defining a class or using anonymous object:
 
 ```kotlin
-adapter = SimpleGenericAdapter()
+adapter = SimpleGenericAdapter.Builder()
             ...
             .addPagingModule(object : PagingModule() {
                             override fun withVisibleThreshold(): Int = 3
@@ -102,7 +108,7 @@ adapter = SimpleGenericAdapter()
 - Currently the library only support OnItemClickerListener:
 
 ```kotlin
-adapter = SimpleGenericAdapter()
+adapter = SimpleGenericAdapter.Builder()
             ...
             .addItemModule(EmployeeModule().addOnItemSelectedListener(object : OnItemSelectedListener<Employee> {
                             override fun onItemSelected(position: Int, item: Employee) {
@@ -111,6 +117,71 @@ adapter = SimpleGenericAdapter()
                         }))
             .attachTo(listView)
 ```
+
+### Scroll Animation
+
+- Now support 4 default animations `ALPHA_IN`, `SCALE_IN`, `SLIDE_IN_BOTTOM` and `SLIDE_IN_RIGHT`:
+
+<img src="images/itemAnim.gif" width="40%">
+
+
+```kotlin
+adapter = SimpleGenericAdapter.Builder()
+            ...
+            .addItemAnimation(SimpleAnimationType.SLIDE_IN_RIGHT)
+            ...
+            .attachTo(listView)
+```
+
+- Or you can create and add your own custom animation xml:
+
+```kotlin
+adapter = SimpleGenericAdapter.Builder()
+            ...
+            .addItemAnimation(R.anim.slide_right)
+            ...
+            .attachTo(listView)
+```
+
+### Drag and Drop Item
+
+- Activate Drag and Drop by setting mode `FULL`, `PARTIAL`, `NONE`:
+
+```kotlin
+adapter = SimpleGenericAdapter.Builder()
+            ...
+            .setDragAndDropMode(SimpleDragAndDropMode.FULL)
+            ...
+            .attachTo(listView)
+```
+
+- `FULL` means you can long press the whole item to drag and drop:
+
+<img src="images/full.gif" width="40%">
+
+- `PARTIAL` means you can choose which view part of ViewHolder to handle Dragging
+
+<img src="images/partial.gif" width="40%">
+
+  -  To enable it, set mode to `PARTIAL`:
+```kotlin
+adapter = SimpleGenericAdapter.Builder()
+            ...
+            .setDragAndDropMode(SimpleDragAndDropMode.PARTIAL)
+            ...
+            .attachTo(listView)
+```
+
+  - In ItemModule, Set view part:
+
+```kotlin
+    override fun onBind(item: Employee, holder: SimpleViewHolder) {
+        ...
+        holder.setDragAndDropByView(view)
+        ...
+    }
+```
+
 
 ## In the future
 The library is still under development,so you can suggest more feature by committing issues to this repository.
