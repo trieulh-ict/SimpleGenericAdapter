@@ -16,6 +16,7 @@ import io.trieulh.simplegenericadapter.holder.SimpleViewHolder
 import io.trieulh.simplegenericadapter.listener.OnItemSelectedListener
 import io.trieulh.simplegenericadapter.module.PagingModule
 import io.trieulh.simplegenericadapter.utils.animation.SimpleAnimationType
+import io.trieulh.simplegenericadapter.utils.drag.SimpleDragAndDropMode
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.random.Random
 
@@ -34,7 +35,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             layoutManager = LinearLayoutManager(this@MainActivity)
         }
 
-        adapter = SimpleGenericAdapter()
+        adapter = SimpleGenericAdapter.Builder()
+            .setDragAndDropMode(SimpleDragAndDropMode.PARTIAL)
             .addItemAnimation(SimpleAnimationType.SLIDE_IN_RIGHT)
             .addItemModule(EmployeeModule().addOnItemSelectedListener(object : OnItemSelectedListener<Employee> {
                 override fun onItemSelected(position: Int, item: Employee) {
@@ -68,6 +70,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
             })
             .attachTo(listView)
+            .build()
+
+//        adapter.setDragAndDropMode(SimpleDragAndDropMode.FULL)
         adapter.setItems(data)
 
         btnAdd.setOnClickListener(this)

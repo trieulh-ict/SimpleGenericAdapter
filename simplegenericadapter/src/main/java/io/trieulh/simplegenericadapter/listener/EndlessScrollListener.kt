@@ -1,6 +1,5 @@
-package io.trieulh.simplegenericadapter.utils.paging
+package io.trieulh.simplegenericadapter.listener
 
-import android.util.Log
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager

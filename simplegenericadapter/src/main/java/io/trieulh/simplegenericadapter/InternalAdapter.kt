@@ -6,22 +6,28 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import androidx.annotation.AnimRes
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import io.trieulh.simplegenericadapter.diff.Diffable
 import io.trieulh.simplegenericadapter.diff.EmptyIndicator
 import io.trieulh.simplegenericadapter.diff.LoadingIndicator
 import io.trieulh.simplegenericadapter.diff.SimpleDiffUtil
 import io.trieulh.simplegenericadapter.holder.SimpleViewHolder
+import io.trieulh.simplegenericadapter.listener.EndlessScrollListener
+import io.trieulh.simplegenericadapter.listener.ItemMoveCallback
+import io.trieulh.simplegenericadapter.listener.LoadMoreObserver
 import io.trieulh.simplegenericadapter.module.EmptyModule
 import io.trieulh.simplegenericadapter.module.ItemModule
 import io.trieulh.simplegenericadapter.module.PagingModule
+import io.trieulh.simplegenericadapter.utils.drag.SimpleDragAndDropMode
 import io.trieulh.simplegenericadapter.utils.let2
-import io.trieulh.simplegenericadapter.utils.paging.EndlessScrollListener
-import io.trieulh.simplegenericadapter.utils.paging.LoadMoreObserver
 import io.trieulh.simplegenericadapter.utils.removeClassIfExist
+import java.util.*
 
 
-class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserver {
+internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
+    LoadMoreObserver, ItemMoveCallback.ItemTouchHelperContract {
+
     private var recyclerView: RecyclerView? = null
 
     internal var data: MutableList<Diffable> = mutableListOf()
@@ -38,8 +44,12 @@ class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserv
     private var endlessScrollListener: EndlessScrollListener? = null
 
     //Item Animation
-    private var animResId: Int = -1;
+    private var animResId: Int = -1
     private var lastPosition = -1
+
+    //Drag and Drop
+    private var dragAndDropMode: SimpleDragAndDropMode = SimpleDragAndDropMode.NONE
+    private var itemTouchHelper: ItemTouchHelper? = null
 
     private val uiHandler
         get() = recyclerView?.handler
@@ -51,9 +61,14 @@ class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserv
     fun attachTo(recyclerView: RecyclerView) {
         this.recyclerView = recyclerView.apply {
             adapter = this@InternalAdapter
-            configureItemModule(this)
+            configureItemModule(recyclerView)
             configureEmptyModule()
-            configurePagingModule(this)
+            configurePagingModule(recyclerView)
+
+            if (dragAndDropMode != SimpleDragAndDropMode.NONE) {
+                val callback = ItemMoveCallback(this@InternalAdapter, dragAndDropMode)
+                itemTouchHelper = ItemTouchHelper(callback).apply { attachToRecyclerView(recyclerView) }
+            }
         }
     }
 
@@ -118,6 +133,30 @@ class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserv
         this.pagingModule = pagingModule
     }
 
+    fun addItemAnimation(@AnimRes resId: Int) {
+        this.animResId = resId;
+    }
+
+    private fun setAnimation(viewToAnimate: View, position: Int) {
+        if (position > lastPosition) {
+            val animation = AnimationUtils.loadAnimation(viewToAnimate.context, animResId)
+            viewToAnimate.startAnimation(animation)
+            lastPosition = position
+        }
+    }
+
+    fun setDragAndDropMode(mode: SimpleDragAndDropMode) {
+        this.dragAndDropMode = mode
+    }
+
+    fun updateDragAndDropMode(mode: SimpleDragAndDropMode) {
+        setDragAndDropMode(mode)
+        if (dragAndDropMode != SimpleDragAndDropMode.NONE && recyclerView != null) {
+            val callback = ItemMoveCallback(this@InternalAdapter, dragAndDropMode)
+            itemTouchHelper = ItemTouchHelper(callback).apply { attachToRecyclerView(recyclerView) }
+        }
+    }
+
     override fun getItemViewType(position: Int): Int {
         when (data[position]) {
             is EmptyIndicator -> return emptyModule!!.getType()
@@ -179,9 +218,16 @@ class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserv
             is LoadingIndicator -> return pagingModule!!.onBind(holder)
             else -> modules.forEach { entry ->
                 if (entry.value.isModule(data[position])) {
-                    entry.value.onBindItem(position, data[position], holder)
+                    // Add Animation
                     if (animResId != -1)
                         setAnimation(holder.itemView, position)
+
+                    //Add Drag and Drop
+                    if (itemTouchHelper != null)
+                        holder.setTouchHelper(itemTouchHelper)
+
+                    // Bind
+                    entry.value.onBindItem(position, data[position], holder)
                     return
                 }
 
@@ -207,16 +253,24 @@ class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(), LoadMoreObserv
         uiHandler?.post { pagingModule?.onLoadMore(currentPage) }
     }
 
-    fun addItemAnimation(@AnimRes resId: Int) {
-        this.animResId = resId;
-    }
-
-    private fun setAnimation(viewToAnimate: View, position: Int) {
-        if (position > lastPosition) {
-            val animation = AnimationUtils.loadAnimation(viewToAnimate.context, animResId)
-            viewToAnimate.startAnimation(animation)
-            lastPosition = position
+    override fun onRowMoved(fromPosition: Int, toPosition: Int) {
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(data, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(data, i, i - 1)
+            }
         }
+        notifyItemMoved(fromPosition, toPosition)
     }
 
+    override fun onRowSelected(viewHolder: SimpleViewHolder) {
+        viewHolder.onChangeDragStateListener?.onStateChanged(viewHolder, SimpleViewHolder.SimpleDragState.SELECTED)
+    }
+
+    override fun onRowClear(viewHolder: SimpleViewHolder) {
+        viewHolder.onChangeDragStateListener?.onStateChanged(viewHolder, SimpleViewHolder.SimpleDragState.UNSELECTED)
+    }
 }
