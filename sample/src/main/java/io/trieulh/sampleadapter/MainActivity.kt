@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         adapter = SimpleGenericAdapter.Builder()
-            .setDragAndDropMode(SimpleDragAndDropMode.PARTIAL)
+            .setDragAndDropMode(SimpleDragAndDropMode.FULL)
             .addItemAnimation(SimpleAnimationType.SLIDE_IN_RIGHT)
             .addItemModule(EmployeeModule().addOnItemSelectedListener(object : OnItemSelectedListener<Employee> {
                 override fun onItemSelected(position: Int, item: Employee) {
