@@ -38,7 +38,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         adapter = SimpleGenericAdapter.Builder()
             .setDragAndDropMode(SimpleDragAndDropMode.FULL)
             .addItemAnimation(SimpleAnimationType.SLIDE_IN_RIGHT)
-            .addItemModule(EmployeeModule().addOnItemSelectedListener(object : OnItemSelectedListener<Employee> {
+            .addItemModule(EmployeeModule().addOnItemSelectedListener(object :
+                OnItemSelectedListener<Employee> {
                 override fun onItemSelected(position: Int, item: Employee) {
                     Toast.makeText(this@MainActivity, "${item.id}", Toast.LENGTH_SHORT).show()
                 }
@@ -49,22 +50,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 override fun withVisibleThreshold(): Int = 3
                 override val layoutRes: Int = R.layout.item_loading_employee
                 override fun onLoadMore(currentPage: Int) {
-                    Handler().postDelayed({
-                        val list = adapter.items.toMutableList()
-                        for (i in 1..10) {
-                            val id = Random.nextInt()
-                            list.add(
-                                Employee(
-                                    id,
-                                    "Name ${id}",
-                                    "Job ${id}"
-                                )
-                            )
-                        }
-                        adapter.setItems(list)
-                    }, 1000)
+                    loadMore()
                 }
-
                 override fun onBind(holder: SimpleViewHolder) {
                     //Do nothing now
                 }
@@ -72,13 +59,29 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             .attachTo(listView)
             .build()
 
-//        adapter.setDragAndDropMode(SimpleDragAndDropMode.FULL)
         adapter.setItems(data)
 
         btnAdd.setOnClickListener(this)
         btnAddAd.setOnClickListener(this)
         btnRemove.setOnClickListener(this)
         btnLoadMore.setOnClickListener(this)
+    }
+
+    private fun loadMore() {
+        Handler().postDelayed({
+            val list = adapter.items.toMutableList()
+            for (i in 1..10) {
+                val id = Random.nextInt()
+                list.add(
+                    Employee(
+                        id,
+                        "Name ${id}",
+                        "Job ${id}"
+                    )
+                )
+            }
+            adapter.setItems(list)
+        }, 1000)
     }
 
     override fun onClick(v: View) {
