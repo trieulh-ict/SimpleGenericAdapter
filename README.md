@@ -199,6 +199,8 @@ adapter = SimpleGenericAdapter.Builder()
 
 ### Add Sticky/Non-sticky Header
 
+<img src="images/stickyAnim.gif" width="40%">
+
 - To use Header, you can implement `HeaderModule` class:
 
 ```kotlin
