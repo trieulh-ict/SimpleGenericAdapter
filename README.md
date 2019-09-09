@@ -239,8 +239,8 @@ The library is still under development,so you can suggest more feature by commit
 
 ## Credit
 
-This library is based on OneAdapter of ironSource. You can check their library [here](https://github.com/ironSource/OneAdapter)
-Also big thanks to Saber Solooki's [ariticle](https://medium.com/@saber.solooki/sticky-header-for-recyclerview-c0eb551c3f68) for the idea and implementation of Sticky header.
+- This library is based on OneAdapter of ironSource. You can check their library [here](https://github.com/ironSource/OneAdapter)
+- Also big thanks to Saber Solooki's [ariticle](https://medium.com/@saber.solooki/sticky-header-for-recyclerview-c0eb551c3f68) for the idea and implementation of Sticky header.
 
 ---
 
