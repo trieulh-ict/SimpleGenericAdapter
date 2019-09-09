@@ -13,7 +13,9 @@ import io.trieulh.simplegenericadapter.module.ItemModule
 class AdvertisementModule : ItemModule<Advertisement>() {
     override val layoutRes: Int = R.layout.item_ad
 
-    override val viewType: Int = ItemType.ADVERTISEMENT.value
+    override fun getType(): Int = ItemType.ADVERTISEMENT.value
+
+    override fun isStickyModule(): Boolean = true
 
     override fun onBind(item: Advertisement, holder: SimpleViewHolder) {
             holder.itemView.findViewById<AppCompatTextView>(R.id.text_content).text = item.content

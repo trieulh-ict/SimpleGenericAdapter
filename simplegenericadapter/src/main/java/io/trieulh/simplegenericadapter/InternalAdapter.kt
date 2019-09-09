@@ -1,5 +1,6 @@
 package io.trieulh.simplegenericadapter
 
+import StickHeaderItemDecoration
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,17 +9,15 @@ import androidx.annotation.AnimRes
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import io.trieulh.simplegenericadapter.diff.Diffable
-import io.trieulh.simplegenericadapter.diff.EmptyIndicator
-import io.trieulh.simplegenericadapter.diff.LoadingIndicator
-import io.trieulh.simplegenericadapter.diff.SimpleDiffUtil
+import io.trieulh.simplegenericadapter.diff.*
 import io.trieulh.simplegenericadapter.holder.SimpleViewHolder
 import io.trieulh.simplegenericadapter.listener.EndlessScrollListener
-import io.trieulh.simplegenericadapter.listener.ItemMoveCallback
 import io.trieulh.simplegenericadapter.listener.LoadMoreObserver
 import io.trieulh.simplegenericadapter.module.EmptyModule
+import io.trieulh.simplegenericadapter.module.HeaderModule
 import io.trieulh.simplegenericadapter.module.ItemModule
 import io.trieulh.simplegenericadapter.module.PagingModule
+import io.trieulh.simplegenericadapter.utils.drag.ItemMoveCallback
 import io.trieulh.simplegenericadapter.utils.drag.SimpleDragAndDropMode
 import io.trieulh.simplegenericadapter.utils.let2
 import io.trieulh.simplegenericadapter.utils.removeClassIfExist
@@ -26,8 +25,8 @@ import java.util.*
 
 
 internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
-    LoadMoreObserver, ItemMoveCallback.ItemTouchHelperContract {
-
+    LoadMoreObserver, ItemMoveCallback.ItemTouchHelperContract,
+    StickHeaderItemDecoration.StickyInterface {
     private var recyclerView: RecyclerView? = null
 
     internal var data: MutableList<Diffable> = mutableListOf()
@@ -42,6 +41,9 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
     //Paging
     private var pagingModule: PagingModule? = null
     private var endlessScrollListener: EndlessScrollListener? = null
+
+    //Header and Footer
+    private var headerModule: HeaderModule? = null
 
     //Item Animation
     private var animResId: Int = -1
@@ -64,10 +66,23 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
             configureItemModule(recyclerView)
             configureEmptyModule()
             configurePagingModule(recyclerView)
+            configureHeaderModule(recyclerView)
 
             if (dragAndDropMode != SimpleDragAndDropMode.NONE) {
-                val callback = ItemMoveCallback(this@InternalAdapter, dragAndDropMode)
-                itemTouchHelper = ItemTouchHelper(callback).apply { attachToRecyclerView(recyclerView) }
+                val callback = ItemMoveCallback(
+                    this@InternalAdapter,
+                    dragAndDropMode
+                )
+                itemTouchHelper =
+                    ItemTouchHelper(callback).apply { attachToRecyclerView(recyclerView) }
+            }
+        }
+    }
+
+    private fun configureHeaderModule(recyclerView: RecyclerView) {
+        headerModule?.let { module ->
+            if (module.isStickyModule()) {
+                recyclerView.addItemDecoration(StickHeaderItemDecoration(this))
             }
         }
     }
@@ -101,6 +116,10 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
         } else {
             items.removeClassIfExist(EmptyIndicator.javaClass)
             items.removeClassIfExist(LoadingIndicator.javaClass)
+            items.removeClassIfExist(HeaderIndicator.javaClass)
+            if (headerModule != null) {
+                items.add(0, HeaderIndicator)
+            }
         }
 
         endlessScrollListener?.resetState()
@@ -122,7 +141,7 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
     }
 
     fun <T : Diffable> addItemModule(itemModule: ItemModule<T>) {
-        modules.set(itemModule.viewType, itemModule as ItemModule<Diffable>)
+        modules.set(itemModule.getType(), itemModule as ItemModule<Diffable>)
     }
 
     fun addEmptyModule(emptyModule: EmptyModule) {
@@ -133,8 +152,12 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
         this.pagingModule = pagingModule
     }
 
+    fun addHeaderModule(headerModule: HeaderModule) {
+        this.headerModule = headerModule
+    }
+
     fun addItemAnimation(@AnimRes resId: Int) {
-        this.animResId = resId;
+        this.animResId = resId
     }
 
     private fun setAnimation(viewToAnimate: View, position: Int) {
@@ -152,7 +175,10 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
     fun updateDragAndDropMode(mode: SimpleDragAndDropMode) {
         setDragAndDropMode(mode)
         if (dragAndDropMode != SimpleDragAndDropMode.NONE && recyclerView != null) {
-            val callback = ItemMoveCallback(this@InternalAdapter, dragAndDropMode)
+            val callback = ItemMoveCallback(
+                this@InternalAdapter,
+                dragAndDropMode
+            )
             itemTouchHelper = ItemTouchHelper(callback).apply { attachToRecyclerView(recyclerView) }
         }
     }
@@ -161,40 +187,27 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
         when (data[position]) {
             is EmptyIndicator -> return emptyModule!!.getType()
             is LoadingIndicator -> return pagingModule!!.getType()
+            is HeaderIndicator -> return headerModule!!.getType()
             else ->
                 modules.forEach { entry ->
-                    if (entry.value.isModule(data[position] as Diffable))
+                    if (entry.value.isModule(data[position]))
                         return entry.key
                 }
         }
-
         throw IllegalArgumentException("No associated Module attached.")
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SimpleViewHolder {
-        if (emptyModule != null && viewType == emptyModule!!.getType()) {
-            return SimpleViewHolder(
-                LayoutInflater.from(parent.context).inflate(
-                    emptyModule!!.layoutRes,
-                    parent,
-                    false
-                )
-            )
-        }
-
-        if (pagingModule != null && viewType == pagingModule!!.getType()) {
-            return SimpleViewHolder(
-                LayoutInflater.from(parent.context).inflate(
-                    pagingModule!!.layoutRes,
-                    parent,
-                    false
-                )
-            )
+        val layoutId = when {
+            emptyModule != null && viewType == emptyModule!!.getType() -> emptyModule!!.layoutRes
+            pagingModule != null && viewType == pagingModule!!.getType() -> pagingModule!!.layoutRes
+            headerModule != null && viewType == headerModule!!.getType() -> headerModule!!.layoutRes
+            else -> modules[viewType]!!.layoutRes
         }
 
         return SimpleViewHolder(
             LayoutInflater.from(parent.context).inflate(
-                modules[viewType]!!.layoutRes,
+                layoutId,
                 parent,
                 false
             )
@@ -208,6 +221,7 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
             // javaClass is used for lettings different Diffable models share the same unique identifier
             is EmptyIndicator -> hashCode().toLong()
             is LoadingIndicator -> hashCode().toLong()
+            is HeaderIndicator -> hashCode().toLong()
             else -> item.getUniqueIdentifier()
         }
     }
@@ -216,6 +230,7 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
         when (data[position]) {
             is EmptyIndicator -> return emptyModule!!.onBind(holder)
             is LoadingIndicator -> return pagingModule!!.onBind(holder)
+            is HeaderIndicator -> return headerModule!!.onBind(holder)
             else -> modules.forEach { entry ->
                 if (entry.value.isModule(data[position])) {
                     // Add Animation
@@ -237,12 +252,13 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
         throw IllegalArgumentException("No associated Module attached.")
     }
 
+    // For Load More
     override fun onLoadingStateChanged(loading: Boolean) {
         if (loading) {
             data.indexOfFirst { it is LoadingIndicator }.let { index ->
                 if (index == -1) {
+                    data.removeClassIfExist(EmptyIndicator.javaClass)
                     data.add(data.size, LoadingIndicator)
-
                     uiHandler?.post { notifyItemInserted(data.size) }
                 }
             }
@@ -252,8 +268,15 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
     override fun onLoadMore(currentPage: Int) {
         uiHandler?.post { pagingModule?.onLoadMore(currentPage) }
     }
+    //
+
+    // For Drag and Drop
+    override fun isContainingHeader(): Boolean = headerModule != null
 
     override fun onRowMoved(fromPosition: Int, toPosition: Int) {
+        if (headerModule != null && (fromPosition == 0 || toPosition == 0))
+            return
+
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
                 Collections.swap(data, i, i + 1)
@@ -267,10 +290,70 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
     }
 
     override fun onRowSelected(viewHolder: SimpleViewHolder) {
-        viewHolder.onChangeDragStateListener?.onStateChanged(viewHolder, SimpleViewHolder.SimpleDragState.SELECTED)
+        viewHolder.onChangeDragStateListener?.onStateChanged(
+            viewHolder,
+            SimpleViewHolder.SimpleDragState.SELECTED
+        )
     }
 
     override fun onRowClear(viewHolder: SimpleViewHolder) {
-        viewHolder.onChangeDragStateListener?.onStateChanged(viewHolder, SimpleViewHolder.SimpleDragState.UNSELECTED)
+        viewHolder.onChangeDragStateListener?.onStateChanged(
+            viewHolder,
+            SimpleViewHolder.SimpleDragState.UNSELECTED
+        )
     }
+    //
+
+    //For Sticky item (including Header and Footer)
+    override fun getHeaderPositionForItem(itemPosition: Int): Int {
+        var headerPosition = -1
+        var tempPos = itemPosition
+        do {
+            if (isStickyHeader(tempPos)) {
+                headerPosition = tempPos
+                break
+            }
+            tempPos -= 1
+        } while (tempPos >= 0)
+        return headerPosition
+    }
+
+    override fun getHeaderLayout(headerPosition: Int): Int {
+        if (headerPosition == 0)
+            return headerModule!!.layoutRes
+        else {
+            modules.forEach { entry ->
+                if (entry.value.isModule(data[headerPosition]))
+                    return entry.value.layoutRes
+            }
+        }
+        throw IllegalArgumentException("Invalid Layout for sticky header.")
+    }
+
+    override fun bindHeaderData(
+        header: SimpleViewHolder,
+        headerPosition: Int
+    ) {
+        if (headerPosition == 0)
+            headerModule!!.onBind(header)
+        else {
+            modules.forEach { entry ->
+                if (entry.value.isModule(data[headerPosition]))
+                    return entry.value.onBind(data[headerPosition],header)
+            }
+        }
+    }
+
+    override fun isStickyHeader(itemPosition: Int): Boolean {
+        if (headerModule != null && itemPosition == 0)
+            return true
+
+        modules.forEach { entry ->
+            if (entry.value.isModule(data[itemPosition]))
+                return entry.value.isStickyModule()
+        }
+
+        return false
+    }
+    //
 }

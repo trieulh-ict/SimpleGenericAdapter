@@ -13,9 +13,11 @@ import io.trieulh.simplegenericadapter.module.ItemModule
  * Created by Trieulh on 01,August,2019
  */
 class EmployeeModule : ItemModule<Employee>() {
+    override fun isStickyModule(): Boolean = false
+
     override val layoutRes: Int = R.layout.item_employee
 
-    override val viewType: Int = ItemType.EMPLOYEE.value
+    override fun getType(): Int = ItemType.EMPLOYEE.value
 
     override fun onBind(item: Employee, holder: SimpleViewHolder) {
         holder.itemView.findViewById<AppCompatTextView>(R.id.text_name).text = item.name
@@ -24,11 +26,16 @@ class EmployeeModule : ItemModule<Employee>() {
         holder.setDragAndDropByView(holder.itemView.findViewById<AppCompatTextView>(R.id.text_name))
 
         holder.setOnChangeDragState(object : SimpleViewHolder.OnChangeDragStateListener {
-            override fun onStateChanged(viewHolder: SimpleViewHolder, state: SimpleViewHolder.SimpleDragState) {
+            override fun onStateChanged(
+                viewHolder: SimpleViewHolder,
+                state: SimpleViewHolder.SimpleDragState
+            ) {
                 if (state == SimpleViewHolder.SimpleDragState.SELECTED) {
-                    holder.itemView.findViewById<CardView>(R.id.container).setCardBackgroundColor(Color.GRAY)
+                    holder.itemView.findViewById<CardView>(R.id.container)
+                        .setCardBackgroundColor(Color.GRAY)
                 } else {
-                    holder.itemView.findViewById<CardView>(R.id.container).setCardBackgroundColor(Color.WHITE)
+                    holder.itemView.findViewById<CardView>(R.id.container)
+                        .setCardBackgroundColor(Color.WHITE)
                 }
             }
         })

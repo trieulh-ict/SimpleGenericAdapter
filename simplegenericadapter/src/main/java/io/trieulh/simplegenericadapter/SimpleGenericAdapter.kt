@@ -4,8 +4,10 @@ import androidx.annotation.AnimRes
 import androidx.recyclerview.widget.RecyclerView
 import io.trieulh.simplegenericadapter.diff.Diffable
 import io.trieulh.simplegenericadapter.diff.EmptyIndicator
+import io.trieulh.simplegenericadapter.diff.HeaderIndicator
 import io.trieulh.simplegenericadapter.diff.LoadingIndicator
 import io.trieulh.simplegenericadapter.module.EmptyModule
+import io.trieulh.simplegenericadapter.module.HeaderModule
 import io.trieulh.simplegenericadapter.module.ItemModule
 import io.trieulh.simplegenericadapter.module.PagingModule
 import io.trieulh.simplegenericadapter.utils.animation.SimpleAnimationType
@@ -20,6 +22,7 @@ class SimpleGenericAdapter internal constructor(private var adapter: InternalAda
         get() = adapter.data.filter {
             !EmptyIndicator.javaClass.isInstance(it)
                     && !LoadingIndicator.javaClass.isInstance(it)
+                    && !HeaderIndicator.javaClass.isInstance(it)
         }
 
     fun setItems(items: List<Diffable>) {
@@ -49,6 +52,10 @@ class SimpleGenericAdapter internal constructor(private var adapter: InternalAda
             return this
         }
 
+        fun addHeaderModule(headerModule: HeaderModule): Builder {
+            adapter.addHeaderModule(headerModule)
+            return this
+        }
 
         fun attachTo(recyclerView: RecyclerView): Builder {
             recyclerView.adapter = adapter

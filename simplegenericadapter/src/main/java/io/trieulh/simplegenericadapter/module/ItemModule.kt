@@ -8,12 +8,7 @@ import io.trieulh.simplegenericadapter.listener.OnItemSelectedListener
 /**
  * Created by Trieulh on 01,August,2019
  */
-abstract class ItemModule<T : Diffable> {
-    @get:LayoutRes
-    abstract val layoutRes: Int
-
-    abstract val viewType: Int
-
+abstract class ItemModule<T : Diffable> : StickyModule {
     private var onItemSelectedListener: OnItemSelectedListener<T>? = null
 
     abstract fun onBind(item: T, holder: SimpleViewHolder)

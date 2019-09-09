@@ -11,6 +11,7 @@ import io.trieulh.sampleadapter.model.Employee
 import io.trieulh.sampleadapter.view.itemModules.AdvertisementModule
 import io.trieulh.sampleadapter.view.itemModules.EmployeeEmptyModule
 import io.trieulh.sampleadapter.view.itemModules.EmployeeModule
+import io.trieulh.sampleadapter.view.itemModules.HeaderEmployeeModule
 import io.trieulh.simplegenericadapter.SimpleGenericAdapter
 import io.trieulh.simplegenericadapter.holder.SimpleViewHolder
 import io.trieulh.simplegenericadapter.listener.OnItemSelectedListener
@@ -52,10 +53,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 override fun onLoadMore(currentPage: Int) {
                     loadMore()
                 }
+
                 override fun onBind(holder: SimpleViewHolder) {
                     //Do nothing now
                 }
             })
+            .addHeaderModule(HeaderEmployeeModule(isSticky = true))
             .attachTo(listView)
             .build()
 

@@ -1,9 +1,8 @@
-package io.trieulh.simplegenericadapter.listener
+package io.trieulh.simplegenericadapter.utils.drag
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import io.trieulh.simplegenericadapter.holder.SimpleViewHolder
-import io.trieulh.simplegenericadapter.utils.drag.SimpleDragAndDropMode
 
 /**
  * Created by Trieulh on 08,August,2019
@@ -21,8 +20,12 @@ class ItemMoveCallback(
 
     }
 
-    override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-        val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
+    override fun getMovementFlags(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder
+    ): Int {
+        val dragFlags =
+            if (adapter.isContainingHeader() && viewHolder.adapterPosition == 0) 0 else ItemTouchHelper.UP or ItemTouchHelper.DOWN
         return makeMovementFlags(dragFlags, 0)
     }
 
@@ -52,6 +55,7 @@ class ItemMoveCallback(
     }
 
     interface ItemTouchHelperContract {
+        fun isContainingHeader(): Boolean
         fun onRowMoved(fromPosition: Int, toPosition: Int)
         fun onRowSelected(myViewHolder: SimpleViewHolder)
         fun onRowClear(myViewHolder: SimpleViewHolder)
