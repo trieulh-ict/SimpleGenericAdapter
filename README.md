@@ -4,22 +4,35 @@
 
 SimpleGenericAdapter is an Android library that helps developers to easily create a Recyclerview Adapter without repeatedly building any adapter boilerplate.
 
+---
+
 ## Features
 
+### v0.3.0
+
+- Support Sticky Header
+- Support Sticky Items
+- Fix bugs
+
 ### v0.2.0
+
 - Support Scroll Item Animation
 - Add Drag & Drop feature
 
 ### v0.1.0
+
 - Create UI Module to bind item data
 - Create UI Module for Empty state
 - Create UI Module for Paging
 - Support OnItemClickListener
 
+---
+
 ## Demo
 
 <img src="images/Empty.png" width="30%"> <img src="images/Items.png" width="30%"> <img src="images/Paging.png" width="30%">
 
+---
 
 ## How to use it?
 
@@ -52,7 +65,9 @@ allprojects {
 class AdvertisementModule : ItemModule<Advertisement>() {
     override val layoutRes: Int = R.layout.item_ad
 
-    override val viewType: Int = ItemType.ADVERTISEMENT.value
+    override fun getType(): Int = ItemType.ADVERTISEMENT.value
+
+    override fun isStickyModule(item: Advertisement): Boolean = true
 
     override fun onBind(item: Advertisement, holder: SimpleViewHolder) {
             holder.itemView.findViewById<AppCompatTextView>(R.id.text_content).text = item.content
@@ -124,7 +139,6 @@ adapter = SimpleGenericAdapter.Builder()
 
 <img src="images/itemAnim.gif" width="40%">
 
-
 ```kotlin
 adapter = SimpleGenericAdapter.Builder()
             ...
@@ -163,7 +177,8 @@ adapter = SimpleGenericAdapter.Builder()
 
 <img src="images/partial.gif" width="40%">
 
-  -  To enable it, set mode to `PARTIAL`:
+- To enable it, set mode to `PARTIAL`:
+
 ```kotlin
 adapter = SimpleGenericAdapter.Builder()
             ...
@@ -172,7 +187,7 @@ adapter = SimpleGenericAdapter.Builder()
             .attachTo(listView)
 ```
 
-  - In ItemModule, Set view part:
+- In ItemModule, Set view part:
 
 ```kotlin
     override fun onBind(item: Employee, holder: SimpleViewHolder) {
@@ -182,14 +197,53 @@ adapter = SimpleGenericAdapter.Builder()
     }
 ```
 
+### Add Sticky/Non-sticky Header
+
+- To use Header, you can implement `HeaderModule` class:
+
+```kotlin
+class HeaderEmployeeModule(private var isSticky: Boolean = false) : HeaderModule() {
+    override val layoutRes: Int = R.layout.item_header
+
+    override fun onBind(holder: SimpleViewHolder) {
+        //Do nothing now
+    }
+
+    override fun isStickyModule(): Boolean = isSticky
+}
+```
+
+- You can set header as sticky item by overriding `isStickyModule()` method
+
+### Create Sticky/Non-sticky Item
+
+- To set normal item as Sticky one, you can implement `ItemModule` class as usual, then override method `isStickyModule()` to `true`:
+
+```kotlin
+class AdvertisementModule : ItemModule<Advertisement>() {
+    ...
+    override fun isStickyModule(item: Advertisement): Boolean = true
+    ...
+}
+```
+
+---
 
 ## In the future
+
 The library is still under development,so you can suggest more feature by committing issues to this repository.
 
+---
+
 ## Credit
-Inspired by OneAdapter of ironSource.
+
+This library is inspired by OneAdapter of ironSource.
+And big thanks to [Saber Solooki](https://medium.com/@saber.solooki/sticky-header-for-recyclerview-c0eb551c3f68) for the idea of Sticky item.
+
+---
 
 ## License
+
 MIT License
 
 Copyright (c) 2019 Tristan Le
