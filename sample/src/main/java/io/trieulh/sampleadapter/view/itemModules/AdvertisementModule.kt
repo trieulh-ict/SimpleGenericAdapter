@@ -15,7 +15,7 @@ class AdvertisementModule : ItemModule<Advertisement>() {
 
     override fun getType(): Int = ItemType.ADVERTISEMENT.value
 
-    override fun isStickyModule(): Boolean = true
+    override fun isStickyModule(item: Advertisement): Boolean = true
 
     override fun onBind(item: Advertisement, holder: SimpleViewHolder) {
             holder.itemView.findViewById<AppCompatTextView>(R.id.text_content).text = item.content

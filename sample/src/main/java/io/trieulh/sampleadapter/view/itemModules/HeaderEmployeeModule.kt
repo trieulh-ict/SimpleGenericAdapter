@@ -1,6 +1,7 @@
 package io.trieulh.sampleadapter.view.itemModules
 
 import io.trieulh.sampleadapter.R
+import io.trieulh.simplegenericadapter.diff.Diffable
 import io.trieulh.simplegenericadapter.holder.SimpleViewHolder
 import io.trieulh.simplegenericadapter.module.HeaderModule
 

@@ -13,7 +13,7 @@ import io.trieulh.simplegenericadapter.module.ItemModule
  * Created by Trieulh on 01,August,2019
  */
 class EmployeeModule : ItemModule<Employee>() {
-    override fun isStickyModule(): Boolean = false
+    override fun isStickyModule(item: Employee): Boolean = false
 
     override val layoutRes: Int = R.layout.item_employee
 

@@ -76,15 +76,13 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
                 itemTouchHelper =
                     ItemTouchHelper(callback).apply { attachToRecyclerView(recyclerView) }
             }
+
+            addItemDecoration(StickHeaderItemDecoration(this@InternalAdapter))
         }
     }
 
     private fun configureHeaderModule(recyclerView: RecyclerView) {
-        headerModule?.let { module ->
-            if (module.isStickyModule()) {
-                recyclerView.addItemDecoration(StickHeaderItemDecoration(this))
-            }
-        }
+        //Do Nothing now
     }
 
     private fun configureItemModule(recyclerView: RecyclerView) {
@@ -339,18 +337,21 @@ internal class InternalAdapter : RecyclerView.Adapter<SimpleViewHolder>(),
         else {
             modules.forEach { entry ->
                 if (entry.value.isModule(data[headerPosition]))
-                    return entry.value.onBind(data[headerPosition],header)
+                    return entry.value.onBind(data[headerPosition], header)
             }
         }
     }
 
     override fun isStickyHeader(itemPosition: Int): Boolean {
+        if (itemPosition == -1)
+            return false
+
         if (headerModule != null && itemPosition == 0)
-            return true
+            return headerModule!!.isStickyModule()
 
         modules.forEach { entry ->
             if (entry.value.isModule(data[itemPosition]))
-                return entry.value.isStickyModule()
+                return entry.value.isStickyModule(data[itemPosition])
         }
 
         return false
