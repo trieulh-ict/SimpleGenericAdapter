@@ -8,6 +8,9 @@ SimpleGenericAdapter is an Android library that helps developers to easily creat
 
 ## Features
 
+### v0.4.0
+- Fix minor bug
+
 ### v0.3.0
 
 - Support Sticky Header
