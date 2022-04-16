@@ -50,7 +50,6 @@ class EndlessScrollListener(
     }
 
     fun resetState() {
-        currentPage = this.startingPageIndex
         loading = false
         previousTotalItemCount = if (includeEmptyState) 1 else 0
     }
